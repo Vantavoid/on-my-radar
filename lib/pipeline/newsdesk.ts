@@ -92,7 +92,7 @@ const BriefJobSchema = z.object({
   source: z.string(),
   sourceUrl: z.string().optional(),
   primarySourceUrl: z.string().optional(),
-  posted: z.string().optional(),
+  posted: z.string().nullable().optional(),
 })
 
 const BriefSchema = z.object({
