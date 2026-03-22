@@ -66,20 +66,20 @@ export default function BellyAircraftTransition() {
             <feGaussianBlur stdDeviation="4" />
           </filter>
 
-          {/* Fuselage belly — light grey with subtle warmth (SAA white belly) */}
+          {/* Fuselage belly — visible light grey (SAA white belly seen from below at altitude) */}
           <linearGradient id="fuse-belly" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#1e2a3e" />
-            <stop offset="30%" stopColor="#2a3650" />
-            <stop offset="50%" stopColor="#303d55" />
-            <stop offset="70%" stopColor="#2a3650" />
-            <stop offset="100%" stopColor="#1e2a3e" />
+            <stop offset="0%" stopColor="#3a4a62" />
+            <stop offset="30%" stopColor="#4a5c78" />
+            <stop offset="50%" stopColor="#566a88" />
+            <stop offset="70%" stopColor="#4a5c78" />
+            <stop offset="100%" stopColor="#3a4a62" />
           </linearGradient>
 
           {/* Wing underside */}
           <linearGradient id="wing-under" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1c2840" />
-            <stop offset="60%" stopColor="#141e30" />
-            <stop offset="100%" stopColor="#0f1824" />
+            <stop offset="0%" stopColor="#354868" />
+            <stop offset="60%" stopColor="#283a54" />
+            <stop offset="100%" stopColor="#1e2e44" />
           </linearGradient>
 
           {/* SAA tail accent — orange to blue */}
@@ -128,16 +128,16 @@ export default function BellyAircraftTransition() {
         <path
           d="M668,132 L640,140 L340,160 L180,172 L118,180"
           fill="none"
-          stroke="rgba(100,150,190,0.3)"
-          strokeWidth="1"
+          stroke="rgba(140,180,210,0.45)"
+          strokeWidth="1.2"
         />
         {/* Flap track fairings */}
-        <line x1="400" y1="164" x2="408" y2="196" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
-        <line x1="500" y1="156" x2="505" y2="190" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
-        <line x1="580" y1="148" x2="582" y2="184" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
+        <line x1="400" y1="164" x2="408" y2="196" stroke="rgba(120,160,200,0.2)" strokeWidth="0.8" />
+        <line x1="500" y1="156" x2="505" y2="190" stroke="rgba(120,160,200,0.2)" strokeWidth="0.8" />
+        <line x1="580" y1="148" x2="582" y2="184" stroke="rgba(120,160,200,0.2)" strokeWidth="0.8" />
         {/* Wing spar lines */}
-        <line x1="200" y1="178" x2="660" y2="148" stroke="rgba(80,130,170,0.08)" strokeWidth="0.6" />
-        <line x1="300" y1="186" x2="660" y2="164" stroke="rgba(80,130,170,0.06)" strokeWidth="0.5" />
+        <line x1="200" y1="178" x2="660" y2="148" stroke="rgba(120,160,200,0.14)" strokeWidth="0.6" />
+        <line x1="300" y1="186" x2="660" y2="164" stroke="rgba(120,160,200,0.1)" strokeWidth="0.5" />
 
         {/* ====== RIGHT WING ====== */}
         <path
@@ -161,14 +161,14 @@ export default function BellyAircraftTransition() {
         <path
           d="M772,132 L800,140 L1100,160 L1260,172 L1322,180"
           fill="none"
-          stroke="rgba(100,150,190,0.3)"
-          strokeWidth="1"
+          stroke="rgba(140,180,210,0.45)"
+          strokeWidth="1.2"
         />
-        <line x1="1040" y1="164" x2="1032" y2="196" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
-        <line x1="940" y1="156" x2="935" y2="190" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
-        <line x1="860" y1="148" x2="858" y2="184" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
-        <line x1="1240" y1="178" x2="780" y2="148" stroke="rgba(80,130,170,0.08)" strokeWidth="0.6" />
-        <line x1="1140" y1="186" x2="780" y2="164" stroke="rgba(80,130,170,0.06)" strokeWidth="0.5" />
+        <line x1="1040" y1="164" x2="1032" y2="196" stroke="rgba(120,160,200,0.2)" strokeWidth="0.8" />
+        <line x1="940" y1="156" x2="935" y2="190" stroke="rgba(120,160,200,0.2)" strokeWidth="0.8" />
+        <line x1="860" y1="148" x2="858" y2="184" stroke="rgba(120,160,200,0.2)" strokeWidth="0.8" />
+        <line x1="1240" y1="178" x2="780" y2="148" stroke="rgba(120,160,200,0.14)" strokeWidth="0.6" />
+        <line x1="1140" y1="186" x2="780" y2="164" stroke="rgba(120,160,200,0.1)" strokeWidth="0.5" />
 
         {/* ====== FUSELAGE ====== */}
         <path
@@ -218,7 +218,7 @@ export default function BellyAircraftTransition() {
             Z
           `}
           fill="none"
-          stroke="rgba(100,150,190,0.18)"
+          stroke="rgba(140,180,210,0.35)"
           strokeWidth="0.8"
         />
         {/* Belly panel line (centreline) */}
@@ -299,7 +299,7 @@ export default function BellyAircraftTransition() {
         <circle cx="720" cy="180" r="3" fill="#ff4444" opacity="0.06" />
 
         {/* ====== ATMOSPHERIC HAZE — far-away feel ====== */}
-        <rect x="0" y="0" width="1440" height="320" fill="rgba(10,18,28,0.15)" />
+        <rect x="0" y="0" width="1440" height="320" fill="rgba(10,18,28,0.05)" />
       </svg>
 
       {/* Wake vortex SVG — helical spirals from wingtips */}

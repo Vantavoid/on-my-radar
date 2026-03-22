@@ -68,12 +68,28 @@ function randomBetween(a: number, b: number): number {
   return a + Math.random() * (b - a)
 }
 
+function isInExclusionZone(x: number, y: number, canvasW: number, canvasH: number): boolean {
+  // Keep the center area clear for the title
+  const cx = canvasW / 2
+  const cy = canvasH / 2
+  const zoneW = canvasW * 0.4
+  const zoneH = canvasH * 0.3
+  return Math.abs(x - cx) < zoneW / 2 && Math.abs(y - cy) < zoneH / 2
+}
+
 function createTarget(canvasW: number, canvasH: number, index: number): Target {
   const heading = randomFrom(INITIAL_HEADINGS) + randomBetween(-15, 15)
+  let x: number, y: number
+  let attempts = 0
+  do {
+    x = randomBetween(50, canvasW - 50)
+    y = randomBetween(50, canvasH - 50)
+    attempts++
+  } while (isInExclusionZone(x, y, canvasW, canvasH) && attempts < 20)
   return {
     id: index,
     callsign: SA_CALLSIGNS[index % SA_CALLSIGNS.length],
-    position: { x: randomBetween(50, canvasW - 50), y: randomBetween(50, canvasH - 50) },
+    position: { x, y },
     heading,
     groundspeed: randomBetween(280, 520),
     fl: Math.round(randomBetween(6, 39)) * 10,
@@ -239,19 +255,19 @@ function drawMountainSilhouette(
   ctx.closePath()
   ctx.clip()
 
-  // Draw slices with glow based on sweep proximity
+  // Fill the clipped mountain shape with glow based on sweep proximity
   for (let i = 0; i < segmentCount; i++) {
     const sliceLeft = mountainLeft + (i / segmentCount) * (mountainRight - mountainLeft)
     const sliceRight = mountainLeft + ((i + 1) / segmentCount) * (mountainRight - mountainLeft)
 
     const glowAge = now - mountainGlowTimes[i]
-    const glowFade = Math.max(0, 1 - glowAge / 3000) // 3 second fade
-    // Base dim level + illuminated level
-    const baseAlpha = 0.015
-    const glowAlpha = baseAlpha + glowFade * 0.12
+    const glowFade = Math.max(0, 1 - glowAge / 3000)
+    const baseAlpha = 0.02
+    const glowAlpha = baseAlpha + glowFade * 0.15
 
     ctx.fillStyle = `rgba(0,255,136,${glowAlpha})`
-    ctx.fillRect(sliceLeft, canvasH * 0.5, sliceRight - sliceLeft, canvasH * 0.25)
+    // Fill a tall rect — the clip path constrains it to the mountain shape
+    ctx.fillRect(sliceLeft, canvasH * 0.4, sliceRight - sliceLeft, canvasH * 0.4)
   }
 
   // Draw a subtle outline that also glows
