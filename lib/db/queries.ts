@@ -87,6 +87,32 @@ export async function getAllEditionDates(): Promise<string[]> {
   return result.map((r) => r.date)
 }
 
+export async function getRecentEditions(days = 7) {
+  const db = getDb()
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() - days)
+  const cutoffStr = cutoff.toISOString().slice(0, 10)
+
+  const recentEditions = await db
+    .select()
+    .from(editions)
+    .where(sql`${editions.date} >= ${cutoffStr}`)
+    .orderBy(desc(editions.date))
+
+  const editionDates = recentEditions.map((e) => e.date)
+  if (!editionDates.length) return []
+
+  const editionArticles = await db
+    .select()
+    .from(articles)
+    .where(sql`${articles.editionDate} IN ${editionDates}`)
+
+  return recentEditions.map((edition) => ({
+    ...edition,
+    articles: editionArticles.filter((a) => a.editionDate === edition.date),
+  }))
+}
+
 export async function getEditionCount(): Promise<number> {
   const db = getDb()
   const result = await db.execute(sql`SELECT COUNT(*) as count FROM editions`)
