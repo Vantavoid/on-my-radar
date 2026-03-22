@@ -1,26 +1,101 @@
 @import "tailwindcss";
 
+@theme {
+  /* ATC Color System */
+  --color-deep-black: #080c10;
+  --color-card-bg: #0d1117;
+  --color-metal-dark: #1a2030;
+  --color-steel-blue: #4a7fa5;
+  --color-amber: #f5a623;
+  --color-radar-green: #00ff88;
+  --color-red-alert: #ff4444;
+  --color-text-primary: #e8edf2;
+  --color-text-muted: #8899aa;
+
+  /* Typography */
+  --font-mono: var(--font-space-mono), 'Courier New', monospace;
+  --font-sans: var(--font-space-mono), 'Courier New', monospace;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #080c10;
+  --foreground: #e8edf2;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #080c10;
+  color: #e8edf2;
+  font-family: var(--font-space-mono), 'Courier New', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #080c10; }
+::-webkit-scrollbar-thumb { background: #4a7fa5; border-radius: 2px; }
+
+/* Scanline overlay */
+.scanlines::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 136, 0.008) 2px,
+    rgba(0, 255, 136, 0.008) 4px
+  );
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* Radar ping hover */
+@keyframes radarPing {
+  0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+}
+.card-ping:hover { animation: radarPing 0.9s ease-out; }
+
+/* N1 spinner rotation */
+@keyframes n1Spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Hero title reveal */
+@keyframes scanLine {
+  0% { clip-path: inset(0 100% 0 0); opacity: 0; }
+  10% { opacity: 1; }
+  100% { clip-path: inset(0 0% 0 0); opacity: 1; }
+}
+
+/* Scroll bounce */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+/* Headset sway */
+@keyframes headsetSway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+/* Severity badge colors */
+.badge-incident  { background: rgba(127,29,29,0.8); color: #fca5a5; }
+.badge-regulation { background: rgba(30,58,95,0.8); color: #93c5fd; }
+.badge-technology { background: rgba(26,58,42,0.8); color: #6ee7b7; }
+.badge-airspace  { background: rgba(45,27,78,0.8); color: #c4b5fd; }
+.badge-weather   { background: rgba(28,45,64,0.8); color: #7dd3fc; }
+.badge-staffing  { background: rgba(59,37,7,0.8); color: #fcd34d; }
