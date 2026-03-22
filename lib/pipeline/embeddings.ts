@@ -1,5 +1,4 @@
 import { embed } from 'ai'
-import { google } from '@ai-sdk/google'
 import type { BriefArticle } from '@/lib/types'
 
 interface ArticleWithEmbedding extends BriefArticle {
@@ -10,17 +9,12 @@ interface ArticleWithEmbedding extends BriefArticle {
 export async function embedArticles(
   articles: ArticleWithEmbedding[]
 ): Promise<ArticleWithEmbedding[]> {
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    console.warn('[embeddings] No Google API key — skipping embeddings')
-    return articles
-  }
-
   return Promise.all(
     articles.map(async (article) => {
       try {
         const text = `${article.headline}\n\n${article.summary}`
         const { embedding } = await embed({
-          model: google.textEmbeddingModel('text-embedding-004'),
+          model: 'google/text-embedding-004' as any,
           value: text,
         })
         return { ...article, embedding }
