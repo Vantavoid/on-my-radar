@@ -4,8 +4,8 @@ import { useEffect, useRef } from 'react'
 
 const SA_CALLSIGNS = [
   'SAA103', 'SAA204', 'SAA281', 'SFR471', 'SFR302', 'AFR102', 'AFR7B',
-  'FAR8Y', 'FAR12C', 'SIA204', 'BAW53', 'UAE406', 'QFA63', 'ETH703',
-  'KLM592', 'LNK12', 'LNK43', 'SIA406', 'GLO441', 'PCF23',
+  'SIA204', 'BAW53', 'UAE406', 'QFA63', 'ETH703',
+  'KLM592', 'LNK12', 'LNK43', 'SIA406', 'GBB401', 'GBB223', 'VIR602', 'VIR41',
 ]
 
 const TARGET_COUNT = 20
@@ -14,6 +14,27 @@ const SWEEP_PERIOD_MS = 4000
 const GLOW_DECAY_MS = 4000
 const NM_PER_PX_BASE = 480 / 1920
 const INITIAL_HEADINGS = [180, 360, 90, 270, 135, 315, 225, 45]
+
+// Table Mountain SVG profile path points (1440-wide coordinate space)
+const MOUNTAIN_PATH_RAW = [
+  [0, 120], [0, 80],
+  // Q120,55 240,48
+  [60, 67.5], [120, 55], [180, 51.5], [240, 48],
+  // Q360,42 480,40
+  [300, 45], [360, 42], [420, 41], [480, 40],
+  [560, 39], [640, 39], [720, 41],
+  // Q800,44 880,52
+  [760, 42.5], [800, 44], [840, 48], [880, 52],
+  // Q960,60 1040,68
+  [920, 56], [960, 60], [1000, 64], [1040, 68],
+  // Q1120,74 1200,70
+  [1080, 71], [1120, 74], [1160, 72], [1200, 70],
+  // Q1320,64 1440,72
+  [1260, 67], [1320, 64], [1380, 68], [1440, 72],
+  [1440, 120],
+]
+const MOUNTAIN_SOURCE_W = 1440
+const MOUNTAIN_SOURCE_H = 120
 
 interface Position {
   x: number
@@ -102,17 +123,20 @@ function drawTarget(ctx: CanvasRenderingContext2D, target: Target, now: number, 
   const glowAge = now - target.lastGlowTime
   const glowAlpha = Math.max(0, 1 - glowAge / GLOW_DECAY_MS)
 
-  // History dots
+  // Overall target opacity — keep things subtle
+  const baseOpacity = 0.55
+
+  // History dots (smaller, more transparent)
   target.history.forEach((pos, i) => {
-    const r = Math.max(1, 4 - i * 0.5)
-    const alpha = (0.6 - i * 0.07) * glowAlpha
+    const r = Math.max(0.5, 2.5 - i * 0.3)
+    const alpha = (0.35 - i * 0.04) * glowAlpha * baseOpacity
     ctx.beginPath()
     ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2)
     ctx.fillStyle = `rgba(0,255,136,${alpha})`
     ctx.fill()
   })
 
-  // Velocity vector (2-minute projection)
+  // Velocity vector (2-minute projection, more transparent)
   const speedPxPerSec = (target.groundspeed / 3600) / nmPerPx
   const rad = (target.heading - 90) * (Math.PI / 180)
   const vx = x + Math.cos(rad) * speedPxPerSec * 120
@@ -121,43 +145,135 @@ function drawTarget(ctx: CanvasRenderingContext2D, target: Target, now: number, 
   ctx.setLineDash([3, 3])
   ctx.moveTo(x, y)
   ctx.lineTo(vx, vy)
-  ctx.strokeStyle = 'rgba(0,255,136,0.4)'
-  ctx.lineWidth = 0.8
+  ctx.strokeStyle = `rgba(0,255,136,${0.2 * baseOpacity})`
+  ctx.lineWidth = 0.6
   ctx.stroke()
   ctx.setLineDash([])
 
-  // Target dot
+  // Target dot (reduced from 5 to 3)
   ctx.beginPath()
-  ctx.arc(x, y, 5, 0, Math.PI * 2)
-  ctx.fillStyle = '#00ff88'
+  ctx.arc(x, y, 3, 0, Math.PI * 2)
+  ctx.fillStyle = `rgba(0,255,136,${0.7 * baseOpacity})`
   ctx.fill()
 
-  // ATC label
+  // ATC label (smaller font, more transparent box)
   const cleared = target.clearedFL ?? target.fl
   const arrow = cleared > target.fl ? '\u2191' : cleared < target.fl ? '\u2193' : '\u2192'
   const line1 = target.callsign
   const line2 = `${target.fl}${arrow}${cleared}  ${Math.round(target.groundspeed)}`
-  const lx = x + 8
-  const ly = y - 18
-  ctx.font = '10px "Space Mono", monospace'
-  const w = Math.max(ctx.measureText(line1).width, ctx.measureText(line2).width) + 8
-  ctx.fillStyle = 'rgba(0,20,10,0.75)'
-  ctx.strokeStyle = '#00ff88'
-  ctx.lineWidth = 0.8
+  const lx = x + 6
+  const ly = y - 14
+  ctx.font = '8px "Space Mono", monospace'
+  const w = Math.max(ctx.measureText(line1).width, ctx.measureText(line2).width) + 6
+  ctx.fillStyle = `rgba(0,20,10,${0.45 * baseOpacity})`
+  ctx.strokeStyle = `rgba(0,255,136,${0.4 * baseOpacity})`
+  ctx.lineWidth = 0.5
   ctx.beginPath()
-  ctx.roundRect(lx, ly - 14, w, 26, 2)
+  ctx.roundRect(lx, ly - 11, w, 21, 2)
   ctx.fill()
   ctx.stroke()
-  ctx.fillStyle = '#ffffff'
-  ctx.fillText(line1, lx + 4, ly - 2)
-  ctx.fillStyle = '#a0b4c8'
-  ctx.fillText(line2, lx + 4, ly + 10)
+  ctx.fillStyle = `rgba(255,255,255,${0.6 * baseOpacity})`
+  ctx.fillText(line1, lx + 3, ly - 1)
+  ctx.fillStyle = `rgba(160,180,200,${0.5 * baseOpacity})`
+  ctx.fillText(line2, lx + 3, ly + 9)
   // Leader line
   ctx.beginPath()
   ctx.moveTo(x, y)
-  ctx.lineTo(lx, ly + 6)
-  ctx.strokeStyle = 'rgba(0,255,136,0.3)'
-  ctx.lineWidth = 0.5
+  ctx.lineTo(lx, ly + 4)
+  ctx.strokeStyle = `rgba(0,255,136,${0.15 * baseOpacity})`
+  ctx.lineWidth = 0.4
+  ctx.stroke()
+}
+
+function getMountainPath(canvasW: number, canvasH: number): { x: number; y: number }[] {
+  const scale = (canvasW * 0.7) / MOUNTAIN_SOURCE_W
+  const offsetX = canvasW * 0.15 // center the 70% width
+  const mountainTop = canvasH * 0.55
+  const mountainBottom = canvasH * 0.70
+  const heightScale = (mountainBottom - mountainTop) / MOUNTAIN_SOURCE_H
+
+  return MOUNTAIN_PATH_RAW.map(([sx, sy]) => ({
+    x: offsetX + sx * scale,
+    y: mountainTop + sy * heightScale,
+  }))
+}
+
+function drawMountainSilhouette(
+  ctx: CanvasRenderingContext2D,
+  canvasW: number,
+  canvasH: number,
+  sweepAngleDeg: number,
+  now: number,
+  mountainGlowTimes: Float64Array
+) {
+  const points = getMountainPath(canvasW, canvasH)
+  if (points.length < 2) return
+
+  const cx = canvasW / 2
+  const cy = canvasH / 2
+
+  // Update glow times for mountain segments hit by sweep
+  const segmentCount = 60
+  const mountainLeft = canvasW * 0.15
+  const mountainRight = canvasW * 0.85
+
+  for (let i = 0; i < segmentCount; i++) {
+    const segX = mountainLeft + (i / segmentCount) * (mountainRight - mountainLeft)
+    const segY = canvasH * 0.62 // approximate vertical center of mountain
+    const angle = ((Math.atan2(segY - cy, segX - cx) * 180 / Math.PI) + 90 + 360) % 360
+    const diff = Math.abs(angle - sweepAngleDeg)
+    if (diff < 10 || diff > 350) {
+      mountainGlowTimes[i] = now
+    }
+  }
+
+  // Draw mountain as a series of vertical slices with varying glow
+  ctx.save()
+
+  // Build the mountain path
+  ctx.beginPath()
+  ctx.moveTo(points[0].x, points[0].y)
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i].x, points[i].y)
+  }
+  ctx.closePath()
+  ctx.clip()
+
+  // Draw slices with glow based on sweep proximity
+  for (let i = 0; i < segmentCount; i++) {
+    const sliceLeft = mountainLeft + (i / segmentCount) * (mountainRight - mountainLeft)
+    const sliceRight = mountainLeft + ((i + 1) / segmentCount) * (mountainRight - mountainLeft)
+
+    const glowAge = now - mountainGlowTimes[i]
+    const glowFade = Math.max(0, 1 - glowAge / 3000) // 3 second fade
+    // Base dim level + illuminated level
+    const baseAlpha = 0.015
+    const glowAlpha = baseAlpha + glowFade * 0.12
+
+    ctx.fillStyle = `rgba(0,255,136,${glowAlpha})`
+    ctx.fillRect(sliceLeft, canvasH * 0.5, sliceRight - sliceLeft, canvasH * 0.25)
+  }
+
+  // Draw a subtle outline that also glows
+  ctx.restore()
+  ctx.beginPath()
+  ctx.moveTo(points[0].x, points[0].y)
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i].x, points[i].y)
+  }
+
+  // Outline with very dim base + sweep glow
+  // Calculate average glow across all segments for the outline
+  let avgGlow = 0
+  for (let i = 0; i < segmentCount; i++) {
+    const glowAge = now - mountainGlowTimes[i]
+    avgGlow += Math.max(0, 1 - glowAge / 3000)
+  }
+  avgGlow /= segmentCount
+  const outlineAlpha = 0.02 + avgGlow * 0.08
+
+  ctx.strokeStyle = `rgba(0,255,136,${outlineAlpha})`
+  ctx.lineWidth = 1
   ctx.stroke()
 }
 
@@ -192,6 +308,7 @@ export default function RadarCanvas() {
     lastFrame: 0,
     nmPerPx: NM_PER_PX_BASE,
   })
+  const mountainGlowRef = useRef<Float64Array>(new Float64Array(60))
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -199,6 +316,7 @@ export default function RadarCanvas() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     const state = stateRef.current
+    const mountainGlowTimes = mountainGlowRef.current
 
     function resize() {
       if (!canvas) return
@@ -248,6 +366,7 @@ export default function RadarCanvas() {
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       drawRadarSweep(ctx, canvas.width, canvas.height, state.sweepAngle)
+      drawMountainSilhouette(ctx, canvas.width, canvas.height, state.sweepAngle, now, mountainGlowTimes)
       state.targets.forEach((t) => drawTarget(ctx, t, now, state.nmPerPx))
     }
 

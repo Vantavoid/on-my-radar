@@ -26,11 +26,11 @@ export default function ScrollAircraft() {
   const progress = useTransform(scrollYProgress, [0, 1], [0, 1])
 
   return (
-    <div ref={containerRef} className="relative h-[400px] overflow-hidden my-16">
+    <div ref={containerRef} className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-60">
       <svg
         viewBox="0 0 1000 400"
-        preserveAspectRatio="xMidYMid meet"
-        className="absolute inset-0 w-full h-full"
+        preserveAspectRatio="xMidYMid slice"
+        className="absolute inset-0 w-full h-full pointer-events-none"
       >
         {/* Hidden path for measurement */}
         <path ref={pathRef} d={PATH} fill="none" stroke="none" />
@@ -67,7 +67,7 @@ export default function ScrollAircraft() {
 
       {/* Aircraft */}
       <motion.div
-        className="absolute pointer-events-none"
+        className="absolute pointer-events-none z-0"
         style={{
           width: 40,
           height: 15,

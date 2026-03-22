@@ -150,8 +150,11 @@ Use the web_search tool to:
 2. Search ${targetCountry} local aviation news — at least 2 searches:
    - "${targetCountry} SACAA ATNS aviation news ${date}"
    - "FACT FAOR FALA airspace ${date}"
-3. Search for current ATCO job vacancies — at least 1 search:
-   - "ATCO ACC TWR APP job vacancy ${new Date(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}"
+3. Search for current EXPERIENCED ATCO job vacancies — at least 2 searches:
+   - "experienced rated ATCO controller vacancy ${new Date(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}"
+   - "qualified air traffic controller position ANSP ${new Date(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}"
+   IMPORTANT: Only include positions for EXPERIENCED/RATED controllers. Do NOT include trainee positions, bursaries, cadet programs, or entry-level roles.
+   Each job MUST link to the SPECIFIC job posting URL — never link to a generic careers page (e.g., never atns.co.za/careers). Use the actual listing URL from the ANSP site, recruitment agency, LinkedIn, or FlightGlobal.
 
 After completing all searches, output ONLY a valid JSON object matching this schema exactly — no prose, no markdown, no preamble:
 {

@@ -45,17 +45,15 @@ export default async function HomePage() {
               </div>
             </section>
 
-            {/* Scroll aircraft divider */}
-            <ScrollAircraft />
-
             {/* Altitude transition */}
             <AltitudeDivider label="FL180 TRANSITION" />
 
             {/* Local section header */}
             <AltitudeDivider label={`${edition.targetCountry.toUpperCase()} TMA`} />
 
-            {/* Local news */}
-            <section className="mb-56">
+            {/* Local news — with scroll aircraft as background decoration */}
+            <section className="relative mb-56">
+              <ScrollAircraft />
               <h2 className="font-mono text-steel-blue text-xs tracking-[0.4em] uppercase mb-8 opacity-60">
                 &#9656; {edition.targetCountry.toUpperCase()}
               </h2>

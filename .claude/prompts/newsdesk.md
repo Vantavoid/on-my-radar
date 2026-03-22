@@ -38,13 +38,13 @@ Return **only** a valid JSON object matching this exact schema. No markdown, no 
   "noLocalNews": false,
   "jobs": [
     {
-      "title": "string",
+      "title": "string — experienced/rated ATCO positions only, never trainee or bursary",
       "ansp": "string — e.g. ATNS, NATS, FAA",
       "location": "string — city and country",
       "type": "ACC|TWR|APP",
-      "source": "string",
-      "sourceUrl": "string|null",
-      "primarySourceUrl": "string|null — direct ANSP careers page if found",
+      "source": "string — where you found the listing",
+      "sourceUrl": "string|null — URL where you found/confirmed the listing",
+      "primarySourceUrl": "string|null — direct link to the job on the ANSP's own site (not a generic careers page)",
       "posted": "YYYY-MM-DD|null"
     }
   ]
@@ -73,10 +73,16 @@ Return **only** a valid JSON object matching this exact schema. No markdown, no 
 - Add `xPostUrl` where a relevant post exists
 - Hard cap: posts from last 48h only
 
-### 4. Jobs (run 1+ search)
-- `ATCO ACC TWR APP job vacancy [MONTH YEAR]`
-- Target: ANSP career pages, FlightGlobal Jobs, LinkedIn
+### 4. Jobs — EXPERIENCED controllers only (run 2+ searches)
+- `experienced rated ATCO controller vacancy [MONTH YEAR]`
+- `qualified air traffic controller position ANSP [MONTH YEAR]`
+- Target: ANSP career pages, FlightGlobal Jobs, LinkedIn, recruitment agencies
 - Include 3–8 real current listings only
+- **EXPERIENCED ONLY** — NO trainee positions, NO bursaries, NO cadet programs, NO entry-level roles. This is a publication for working controllers seeking their next rated position.
+- **SPECIFIC URLs REQUIRED** — Every job must link to the actual job posting page, NOT a generic careers page (e.g., never link to `atns.co.za/careers` — find the specific listing URL). If the ANSP site doesn't have a direct link, use the recruitment agency, LinkedIn, or FlightGlobal listing URL instead.
+- URL priority: primary ANSP job listing page > recruitment agency listing > LinkedIn job page > FlightGlobal Jobs listing
+- `primarySourceUrl` = direct link to the job on the ANSP's own careers site (if available)
+- `sourceUrl` = where you actually found/confirmed the listing
 
 ---
 

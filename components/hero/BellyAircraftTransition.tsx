@@ -1,147 +1,336 @@
-const ENGINE_POSITIONS = [102, 338, 1102, 1338]
+/**
+ * BellyAircraftTransition — Realistic belly-up 747 silhouette with SAA livery
+ * accents and helical wake vortices from wingtips. Server component (no 'use client').
+ */
 
-const CONTRAIL_SOURCES = [
-  { x: 102, wing: false },
-  { x: 280, wing: true },
-  { x: 338, wing: false },
-  { x: 1102, wing: false },
-  { x: 1160, wing: true },
-  { x: 1338, wing: false },
+// Generate a helical wake vortex path from a wingtip origin
+function helicalVortexPath(
+  startX: number,
+  startY: number,
+  length: number,
+  amplitude: number,
+  wavelength: number,
+  drift: number, // horizontal drift direction (+1 right, -1 left)
+  phase: number = 0,
+): string {
+  const steps = 80
+  const points: string[] = []
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps
+    const y = startY + t * length
+    const x =
+      startX +
+      drift * t * 40 +
+      amplitude * (1 - t * 0.3) * Math.sin((t * length / wavelength) * Math.PI * 2 + phase)
+    points.push(i === 0 ? `M${x.toFixed(1)},${y.toFixed(1)}` : `L${x.toFixed(1)},${y.toFixed(1)}`)
+  }
+  return points.join(' ')
+}
+
+// Pre-compute vortex paths (server-safe, deterministic)
+const LEFT_TIP_X = 118
+const RIGHT_TIP_X = 1322
+const VORTEX_START_Y = 8
+
+const vortices = [
+  // Left wingtip — main vortex
+  { path: helicalVortexPath(LEFT_TIP_X, VORTEX_START_Y, 700, 18, 90, -1, 0), opacity: 0.12, width: 2.5 },
+  { path: helicalVortexPath(LEFT_TIP_X, VORTEX_START_Y, 700, 14, 90, -1, 0.3), opacity: 0.07, width: 5 },
+  { path: helicalVortexPath(LEFT_TIP_X, VORTEX_START_Y, 700, 22, 90, -1, -0.2), opacity: 0.04, width: 9 },
+  // Right wingtip — main vortex
+  { path: helicalVortexPath(RIGHT_TIP_X, VORTEX_START_Y, 700, 18, 90, 1, 0), opacity: 0.12, width: 2.5 },
+  { path: helicalVortexPath(RIGHT_TIP_X, VORTEX_START_Y, 700, 14, 90, 1, 0.3), opacity: 0.07, width: 5 },
+  { path: helicalVortexPath(RIGHT_TIP_X, VORTEX_START_Y, 700, 22, 90, 1, -0.2), opacity: 0.04, width: 9 },
 ]
 
 export default function BellyAircraftTransition() {
   return (
     <>
-      {/* Belly aircraft SVG */}
+      {/* Aircraft belly SVG */}
       <svg
-        viewBox="0 0 1440 280"
+        viewBox="0 0 1440 320"
         preserveAspectRatio="xMidYMid meet"
         aria-hidden="true"
         className="w-full block"
       >
         <defs>
-          <filter id="belly-edge">
-            <feGaussianBlur stdDeviation="2.5" result="blur" />
+          {/* Soft edge filter */}
+          <filter id="belly-soft">
+            <feGaussianBlur stdDeviation="1.8" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
-          <linearGradient id="wing-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1a2540" />
-            <stop offset="100%" stopColor="#0d1420" />
+          <filter id="belly-glow">
+            <feGaussianBlur stdDeviation="4" />
+          </filter>
+
+          {/* Fuselage belly — light grey with subtle warmth (SAA white belly) */}
+          <linearGradient id="fuse-belly" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#1e2a3e" />
+            <stop offset="30%" stopColor="#2a3650" />
+            <stop offset="50%" stopColor="#303d55" />
+            <stop offset="70%" stopColor="#2a3650" />
+            <stop offset="100%" stopColor="#1e2a3e" />
           </linearGradient>
-          <linearGradient id="fuse-fill" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#1a2540" />
-            <stop offset="50%" stopColor="#222e48" />
-            <stop offset="100%" stopColor="#1a2540" />
+
+          {/* Wing underside */}
+          <linearGradient id="wing-under" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#1c2840" />
+            <stop offset="60%" stopColor="#141e30" />
+            <stop offset="100%" stopColor="#0f1824" />
+          </linearGradient>
+
+          {/* SAA tail accent — orange to blue */}
+          <linearGradient id="saa-tail" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#e8752a" stopOpacity="0.35" />
+            <stop offset="50%" stopColor="#c4622a" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#1a5c8a" stopOpacity="0.3" />
+          </linearGradient>
+
+          {/* Engine intake glow */}
+          <radialGradient id="engine-glow" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stopColor="#1a2e4a" />
+            <stop offset="60%" stopColor="#111c2e" />
+            <stop offset="100%" stopColor="#0a1220" />
+          </radialGradient>
+
+          {/* Vortex fade */}
+          <linearGradient id="vortex-fade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#8ab4d4" stopOpacity="1" />
+            <stop offset="40%" stopColor="#8ab4d4" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#8ab4d4" stopOpacity="0" />
           </linearGradient>
         </defs>
 
-        {/* Left wing */}
-        <path d="M664,128 L18,176 L32,194 L666,158 Z" fill="url(#wing-fill)" filter="url(#belly-edge)" />
-        <path d="M664,128 L18,176" stroke="rgba(74,127,165,0.55)" strokeWidth="1.4" fill="none" />
-        <path d="M666,158 L32,194" stroke="rgba(74,127,165,0.28)" strokeWidth="0.8" fill="none" />
-
-        {/* Right wing */}
-        <path d="M776,128 L1422,176 L1408,194 L774,158 Z" fill="url(#wing-fill)" filter="url(#belly-edge)" />
-        <path d="M776,128 L1422,176" stroke="rgba(74,127,165,0.55)" strokeWidth="1.4" fill="none" />
-        <path d="M774,158 L1408,194" stroke="rgba(74,127,165,0.28)" strokeWidth="0.8" fill="none" />
-
-        {/* Fuselage */}
+        {/* ====== LEFT WING ====== */}
+        {/* Main wing planform — swept, tapered, realistic 747 shape */}
         <path
-          d="M720,14 Q748,15 763,28 L779,138 L782,163 L773,250 Q755,273 720,275 Q685,273 667,250 L658,163 L661,138 L677,28 Q692,15 720,14 Z"
-          fill="url(#fuse-fill)"
-          filter="url(#belly-edge)"
+          d={`
+            M668,132
+            L640,140
+            L340,160
+            L180,172
+            L118,180
+            L108,184
+            L118,188
+            L190,192
+            L360,196
+            L640,184
+            L670,172
+            Z
+          `}
+          fill="url(#wing-under)"
+          filter="url(#belly-soft)"
         />
+        {/* Wing leading edge highlight */}
         <path
-          d="M720,14 Q748,15 763,28 L779,138 L782,163 L773,250 Q755,273 720,275 Q685,273 667,250 L658,163 L661,138 L677,28 Q692,15 720,14 Z"
+          d="M668,132 L640,140 L340,160 L180,172 L118,180"
           fill="none"
-          stroke="rgba(74,127,165,0.35)"
-          strokeWidth="1.2"
+          stroke="rgba(100,150,190,0.3)"
+          strokeWidth="1"
         />
-        {/* Nose highlights */}
-        <path d="M720,14 Q748,15 763,28" stroke="rgba(74,127,165,0.6)" strokeWidth="1.4" fill="none" />
-        <path d="M720,14 Q692,15 677,28" stroke="rgba(74,127,165,0.6)" strokeWidth="1.4" fill="none" />
+        {/* Flap track fairings */}
+        <line x1="400" y1="164" x2="408" y2="196" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
+        <line x1="500" y1="156" x2="505" y2="190" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
+        <line x1="580" y1="148" x2="582" y2="184" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
+        {/* Wing spar lines */}
+        <line x1="200" y1="178" x2="660" y2="148" stroke="rgba(80,130,170,0.08)" strokeWidth="0.6" />
+        <line x1="300" y1="186" x2="660" y2="164" stroke="rgba(80,130,170,0.06)" strokeWidth="0.5" />
 
-        {/* Belly window strip */}
-        <rect x="704" y="55" width="32" height="160" rx="16" fill="#0d1522" opacity="0.8" />
-        <rect x="707" y="58" width="26" height="154" rx="13" fill="none" stroke="rgba(74,127,165,0.2)" strokeWidth="0.6" />
+        {/* ====== RIGHT WING ====== */}
+        <path
+          d={`
+            M772,132
+            L800,140
+            L1100,160
+            L1260,172
+            L1322,180
+            L1332,184
+            L1322,188
+            L1250,192
+            L1080,196
+            L800,184
+            L770,172
+            Z
+          `}
+          fill="url(#wing-under)"
+          filter="url(#belly-soft)"
+        />
+        <path
+          d="M772,132 L800,140 L1100,160 L1260,172 L1322,180"
+          fill="none"
+          stroke="rgba(100,150,190,0.3)"
+          strokeWidth="1"
+        />
+        <line x1="1040" y1="164" x2="1032" y2="196" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
+        <line x1="940" y1="156" x2="935" y2="190" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
+        <line x1="860" y1="148" x2="858" y2="184" stroke="rgba(80,130,170,0.12)" strokeWidth="0.8" />
+        <line x1="1240" y1="178" x2="780" y2="148" stroke="rgba(80,130,170,0.08)" strokeWidth="0.6" />
+        <line x1="1140" y1="186" x2="780" y2="164" stroke="rgba(80,130,170,0.06)" strokeWidth="0.5" />
 
-        {/* Engine nacelles */}
-        <ellipse cx="102" cy="184" rx="68" ry="10" fill="#111e30" />
-        <ellipse cx="102" cy="184" rx="68" ry="10" stroke="rgba(74,127,165,0.40)" strokeWidth="1.2" fill="none" />
-        <ellipse cx="338" cy="164" rx="60" ry="9" fill="#111e30" />
-        <ellipse cx="338" cy="164" rx="60" ry="9" stroke="rgba(74,127,165,0.35)" strokeWidth="1" fill="none" />
-        <ellipse cx="1102" cy="164" rx="60" ry="9" fill="#111e30" />
-        <ellipse cx="1102" cy="164" rx="60" ry="9" stroke="rgba(74,127,165,0.35)" strokeWidth="1" fill="none" />
-        <ellipse cx="1338" cy="184" rx="68" ry="10" fill="#111e30" />
-        <ellipse cx="1338" cy="184" rx="68" ry="10" stroke="rgba(74,127,165,0.40)" strokeWidth="1.2" fill="none" />
+        {/* ====== FUSELAGE ====== */}
+        <path
+          d={`
+            M720,16
+            Q742,17 754,26
+            L762,60
+            L770,120
+            L774,160
+            L772,220
+            L766,260
+            L756,285
+            Q740,304 720,306
+            Q700,304 684,285
+            L674,260
+            L668,220
+            L666,160
+            L670,120
+            L678,60
+            L686,26
+            Q698,17 720,16
+            Z
+          `}
+          fill="url(#fuse-belly)"
+          filter="url(#belly-soft)"
+        />
+        {/* Fuselage outline — very subtle */}
+        <path
+          d={`
+            M720,16
+            Q742,17 754,26
+            L762,60
+            L770,120
+            L774,160
+            L772,220
+            L766,260
+            L756,285
+            Q740,304 720,306
+            Q700,304 684,285
+            L674,260
+            L668,220
+            L666,160
+            L670,120
+            L678,60
+            L686,26
+            Q698,17 720,16
+            Z
+          `}
+          fill="none"
+          stroke="rgba(100,150,190,0.18)"
+          strokeWidth="0.8"
+        />
+        {/* Belly panel line (centreline) */}
+        <line x1="720" y1="30" x2="720" y2="290" stroke="rgba(100,150,190,0.06)" strokeWidth="0.5" />
 
-        {/* Horizontal stabilisers */}
-        <path d="M660,252 Q608,264 552,282 L555,291 Q612,274 663,261 Z" fill="url(#wing-fill)" stroke="rgba(74,127,165,0.3)" strokeWidth="0.8" />
-        <path d="M780,252 Q832,264 888,282 L885,291 Q828,274 777,261 Z" fill="url(#wing-fill)" stroke="rgba(74,127,165,0.3)" strokeWidth="0.8" />
+        {/* Nose radome — slightly darker circle */}
+        <ellipse cx="720" cy="24" rx="14" ry="8" fill="#1a2640" opacity="0.6" />
+        <ellipse cx="720" cy="24" rx="14" ry="8" fill="none" stroke="rgba(100,150,190,0.2)" strokeWidth="0.5" />
 
-        {/* Spar lines */}
-        <line x1="280" y1="177" x2="666" y2="152" stroke="rgba(74,127,165,0.22)" strokeWidth="1" />
-        <line x1="1160" y1="177" x2="774" y2="152" stroke="rgba(74,127,165,0.22)" strokeWidth="1" />
-        <line x1="490" y1="160" x2="664" y2="140" stroke="rgba(74,127,165,0.12)" strokeWidth="0.6" />
-        <line x1="950" y1="160" x2="776" y2="140" stroke="rgba(74,127,165,0.12)" strokeWidth="0.6" />
+        {/* ====== SAA TAIL LIVERY ACCENT ====== */}
+        {/* Subtle orange-blue band near the tail area */}
+        <path
+          d={`
+            M706,265
+            Q720,268 734,265
+            L736,280
+            Q720,284 704,280
+            Z
+          `}
+          fill="url(#saa-tail)"
+        />
+        {/* Tiny SAA springbok hint — just a subtle warm spot */}
+        <ellipse cx="720" cy="272" rx="6" ry="4" fill="#d4702a" opacity="0.1" />
+
+        {/* ====== ENGINE NACELLES ====== */}
+        {/* Left outboard — #1 */}
+        <ellipse cx="248" cy="174" rx="28" ry="9" fill="url(#engine-glow)" />
+        <ellipse cx="248" cy="174" rx="28" ry="9" fill="none" stroke="rgba(100,150,190,0.2)" strokeWidth="0.7" />
+        <ellipse cx="248" cy="174" rx="14" ry="5" fill="#0c1520" opacity="0.5" />
+        {/* Pylon */}
+        <line x1="248" y1="165" x2="260" y2="155" stroke="rgba(100,150,190,0.1)" strokeWidth="1.5" />
+
+        {/* Left inboard — #2 */}
+        <ellipse cx="440" cy="162" rx="30" ry="10" fill="url(#engine-glow)" />
+        <ellipse cx="440" cy="162" rx="30" ry="10" fill="none" stroke="rgba(100,150,190,0.2)" strokeWidth="0.7" />
+        <ellipse cx="440" cy="162" rx="15" ry="5.5" fill="#0c1520" opacity="0.5" />
+        <line x1="440" y1="152" x2="452" y2="146" stroke="rgba(100,150,190,0.1)" strokeWidth="1.5" />
+
+        {/* Right inboard — #3 */}
+        <ellipse cx="1000" cy="162" rx="30" ry="10" fill="url(#engine-glow)" />
+        <ellipse cx="1000" cy="162" rx="30" ry="10" fill="none" stroke="rgba(100,150,190,0.2)" strokeWidth="0.7" />
+        <ellipse cx="1000" cy="162" rx="15" ry="5.5" fill="#0c1520" opacity="0.5" />
+        <line x1="1000" y1="152" x2="988" y2="146" stroke="rgba(100,150,190,0.1)" strokeWidth="1.5" />
+
+        {/* Right outboard — #4 */}
+        <ellipse cx="1192" cy="174" rx="28" ry="9" fill="url(#engine-glow)" />
+        <ellipse cx="1192" cy="174" rx="28" ry="9" fill="none" stroke="rgba(100,150,190,0.2)" strokeWidth="0.7" />
+        <ellipse cx="1192" cy="174" rx="14" ry="5" fill="#0c1520" opacity="0.5" />
+        <line x1="1192" y1="165" x2="1180" y2="155" stroke="rgba(100,150,190,0.1)" strokeWidth="1.5" />
+
+        {/* ====== HORIZONTAL STABILISER ====== */}
+        <path
+          d="M670,272 L610,290 L580,302 L582,308 L615,298 L672,280 Z"
+          fill="url(#wing-under)"
+          stroke="rgba(100,150,190,0.15)"
+          strokeWidth="0.6"
+        />
+        <path
+          d="M770,272 L830,290 L860,302 L858,308 L825,298 L768,280 Z"
+          fill="url(#wing-under)"
+          stroke="rgba(100,150,190,0.15)"
+          strokeWidth="0.6"
+        />
+
+        {/* ====== VERTICAL STABILISER (seen as thin line from below) ====== */}
+        <line x1="720" y1="278" x2="720" y2="308" stroke="rgba(100,150,190,0.2)" strokeWidth="2" />
+        {/* SAA tail fin accent */}
+        <line x1="720" y1="286" x2="720" y2="302" stroke="#d4702a" strokeWidth="1.2" opacity="0.15" />
+
+        {/* ====== NAVIGATION LIGHTS (very subtle) ====== */}
+        {/* Left wingtip — red */}
+        <circle cx="116" cy="180" r="2" fill="#ff3333" opacity="0.15" />
+        <circle cx="116" cy="180" r="5" fill="#ff3333" opacity="0.04" />
+        {/* Right wingtip — green */}
+        <circle cx="1324" cy="180" r="2" fill="#33ff66" opacity="0.15" />
+        <circle cx="1324" cy="180" r="5" fill="#33ff66" opacity="0.04" />
+        {/* Belly beacon — subtle red pulse area */}
+        <circle cx="720" cy="180" r="3" fill="#ff4444" opacity="0.06" />
+
+        {/* ====== ATMOSPHERIC HAZE — far-away feel ====== */}
+        <rect x="0" y="0" width="1440" height="320" fill="rgba(10,18,28,0.15)" />
       </svg>
 
-      {/* Contrails */}
+      {/* Wake vortex SVG — helical spirals from wingtips */}
       <svg
-        viewBox="0 0 1440 780"
+        viewBox="0 0 1440 700"
         preserveAspectRatio="none"
         aria-hidden="true"
         className="w-full block"
-        style={{ height: '780px', marginTop: '-2px' }}
+        style={{ height: '700px', marginTop: '-2px' }}
       >
         <defs>
-          <linearGradient id="ctrail-fade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#ddeeff" stopOpacity="1" />
-            <stop offset="20%" stopColor="#c8ddf0" stopOpacity="0.85" />
-            <stop offset="60%" stopColor="#c8ddf0" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#c8ddf0" stopOpacity="0" />
+          <linearGradient id="vortex-fade-v" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#7aa8c8" stopOpacity="0.6" />
+            <stop offset="30%" stopColor="#7aa8c8" stopOpacity="0.3" />
+            <stop offset="70%" stopColor="#7aa8c8" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="#7aa8c8" stopOpacity="0" />
           </linearGradient>
-          <linearGradient id="ctrail-core" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
-            <stop offset="25%" stopColor="#e8f4ff" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#c8ddf0" stopOpacity="0" />
-          </linearGradient>
-          <filter id="vol-soft"><feGaussianBlur stdDeviation="28" /></filter>
-          <filter id="vol-mid"><feGaussianBlur stdDeviation="12" /></filter>
-          <filter id="vol-hard"><feGaussianBlur stdDeviation="3" /></filter>
+          <filter id="vortex-blur-soft"><feGaussianBlur stdDeviation="6" /></filter>
+          <filter id="vortex-blur-mid"><feGaussianBlur stdDeviation="3" /></filter>
         </defs>
 
-        {CONTRAIL_SOURCES.map(({ x, wing }, i) => {
-          const bw = wing ? 32 : 14
-          const fanned = wing ? 6.5 : 4.5
-          const h = wing ? 760 : 720
-          const layers = [
-            { filter: 'url(#vol-soft)', wm: 5.5, op: wing ? 0.38 : 0.28 },
-            { filter: 'url(#vol-mid)', wm: 2.5, op: wing ? 0.55 : 0.42 },
-            { filter: 'url(#vol-hard)', wm: 1, op: wing ? 0.70 : 0.58, core: true as const },
-          ]
-          return layers.map((l, li) => (
-            <path
-              key={`${i}-${li}`}
-              d={`M${x - bw * l.wm},0 L${x + bw * l.wm},0 L${x + bw * fanned * l.wm},${h} L${x - bw * fanned * l.wm},${h} Z`}
-              fill={'core' in l ? 'url(#ctrail-core)' : 'url(#ctrail-fade)'}
-              opacity={l.op}
-              filter={l.filter}
-            />
-          ))
-        })}
-
-        {/* Bright core streaks for engines */}
-        {ENGINE_POSITIONS.map((x, i) => (
-          <line
-            key={`core-${i}`}
-            x1={x} y1="0" x2={x} y2="480"
-            stroke="rgba(255,255,255,0.22)"
-            strokeWidth="2"
-            filter="url(#vol-hard)"
+        {vortices.map((v, i) => (
+          <path
+            key={i}
+            d={v.path}
+            fill="none"
+            stroke="url(#vortex-fade-v)"
+            strokeWidth={v.width}
+            opacity={v.opacity}
+            filter={v.width > 6 ? 'url(#vortex-blur-soft)' : v.width > 3 ? 'url(#vortex-blur-mid)' : undefined}
+            strokeLinecap="round"
           />
         ))}
       </svg>
