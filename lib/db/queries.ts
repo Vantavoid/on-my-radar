@@ -4,20 +4,25 @@ import { articles, editions, jobs } from './schema'
 import type { EditionWithContent } from '@/lib/types'
 
 export async function getLatestEdition(): Promise<EditionWithContent | null> {
-  const db = getDb()
-  const edition = await db
-    .select()
-    .from(editions)
-    .orderBy(desc(editions.date))
-    .limit(1)
-  if (!edition[0]) return null
+  try {
+    const db = getDb()
+    const edition = await db
+      .select()
+      .from(editions)
+      .orderBy(desc(editions.date))
+      .limit(1)
+    if (!edition[0]) return null
 
-  const [editionArticles, editionJobs] = await Promise.all([
-    db.select().from(articles).where(eq(articles.editionDate, edition[0].date)),
-    db.select().from(jobs).where(eq(jobs.editionDate, edition[0].date)),
-  ])
+    const [editionArticles, editionJobs] = await Promise.all([
+      db.select().from(articles).where(eq(articles.editionDate, edition[0].date)),
+      db.select().from(jobs).where(eq(jobs.editionDate, edition[0].date)),
+    ])
 
-  return serializeEdition(edition[0], editionArticles, editionJobs)
+    return serializeEdition(edition[0], editionArticles, editionJobs)
+  } catch (err) {
+    console.error('[queries] getLatestEdition failed:', err)
+    return null
+  }
 }
 
 export async function getEditionByDate(date: string): Promise<EditionWithContent | null> {
