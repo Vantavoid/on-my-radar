@@ -90,8 +90,8 @@ const BriefJobSchema = z.object({
   location: z.string(),
   type: z.enum(['ACC', 'TWR', 'APP']),
   source: z.string(),
-  sourceUrl: z.string().optional(),
-  primarySourceUrl: z.string().optional(),
+  sourceUrl: z.string().nullable().optional(),
+  primarySourceUrl: z.string().nullable().optional(),
   posted: z.string().nullable().optional(),
 })
 
