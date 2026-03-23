@@ -28,6 +28,11 @@ function slugify(headline: string, date: string): string {
 }
 
 export async function publishEdition(brief: Brief): Promise<{ editionNumber: number; url: string }> {
+  const allArticles: BriefArticle[] = [...brief.global, ...brief.local]
+  if (allArticles.length === 0) {
+    throw new Error(`Refusing to publish empty edition for ${brief.date} — newsdesk returned 0 articles`)
+  }
+
   const db = getDb()
 
   // 1. Determine edition number
@@ -42,7 +47,6 @@ export async function publishEdition(brief: Brief): Promise<{ editionNumber: num
   }).onConflictDoNothing()
 
   // 3. Generate images for all articles
-  const allArticles: BriefArticle[] = [...brief.global, ...brief.local]
   const withImages = await generateImages(allArticles)
 
   // 4. Generate embeddings

@@ -185,7 +185,7 @@ After completing all searches, output ONLY a valid JSON object matching this sch
     })
   } catch (err) {
     console.error('[newsdesk] generateText failed:', err)
-    return buildFallbackBrief(date, targetCountry)
+    throw new Error(`Newsdesk AI generation failed: ${err instanceof Error ? err.message : String(err)}`)
   }
 
   // Parse the JSON response
@@ -199,17 +199,7 @@ After completing all searches, output ONLY a valid JSON object matching this sch
   } catch (err) {
     console.error('[newsdesk] Failed to parse brief JSON:', err)
     console.error('[newsdesk] Raw response preview:', result.text.slice(0, 800))
-    return buildFallbackBrief(date, targetCountry)
+    throw new Error(`Newsdesk JSON parse failed: ${err instanceof Error ? err.message : String(err)}`)
   }
 }
 
-function buildFallbackBrief(date: string, targetCountry: string): Brief {
-  return {
-    date,
-    targetCountry,
-    global: [],
-    local: [],
-    noLocalNews: true,
-    jobs: [],
-  }
-}
