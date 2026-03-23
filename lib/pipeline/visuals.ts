@@ -32,7 +32,7 @@ Do NOT include text overlays or watermarks.`,
         const filename = `articles/${article.headline.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 40)}-${Date.now()}.png`
 
         const blob = await put(filename, buffer, {
-          access: 'private',
+          access: 'public',
           contentType: imageData.mediaType ?? 'image/png',
         })
 

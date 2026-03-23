@@ -46,10 +46,11 @@ export default function ArticleCard({ article, index = 0 }: ArticleCardProps) {
       transition={{ duration: 0.4, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
       className="card-ping relative"
       style={{
-        background: 'rgba(10,20,30,0.75)',
+        background: 'rgba(13,17,23,0.92)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        border: '1px solid rgba(0,255,136,0.15)',
+        border: '1px solid rgba(74,127,165,0.25)',
+        boxShadow: '0 0 20px rgba(0,0,0,0.5)',
         borderLeft: SEVERITY_BORDER[article.severity] ?? SEVERITY_BORDER.routine,
         borderRadius: '6px',
         padding: '20px 24px',
