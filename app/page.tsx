@@ -26,22 +26,22 @@ export default async function HomePage() {
         {/* Hero */}
         <ParallaxHero edition={edition} />
 
-        {/* Section transition: belly aircraft flyover */}
-        <div className="relative overflow-hidden" style={{ marginBottom: '-2px' }}>
-          <BellyAircraftTransition />
-        </div>
-
         {edition ? (
           <main className="relative max-w-5xl mx-auto px-6 pb-24">
-            {/* Global news */}
-            <section className="mb-56 mt-16">
-              <h2 className="font-mono text-steel-blue text-xs tracking-[0.4em] uppercase mb-8 opacity-60">
-                &#9656; GLOBAL
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-                {globalArticles.map((article, i) => (
-                  <ArticleCard key={article.id} article={article} index={i} />
-                ))}
+            {/* Global news — belly aircraft pinned behind this section */}
+            <section className="relative mb-56 mt-16">
+              <div className="absolute inset-0 -top-32 overflow-hidden pointer-events-none z-0 opacity-40">
+                <BellyAircraftTransition />
+              </div>
+              <div className="relative z-[1]">
+                <h2 className="font-mono text-steel-blue text-xs tracking-[0.4em] uppercase mb-8 opacity-60">
+                  &#9656; GLOBAL
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                  {globalArticles.map((article, i) => (
+                    <ArticleCard key={article.id} article={article} index={i} />
+                  ))}
+                </div>
               </div>
             </section>
 

@@ -14,7 +14,7 @@ export async function embedArticles(
       try {
         const text = `${article.headline}\n\n${article.summary}`
         const { embedding } = await embed({
-          model: 'google/text-embedding-004' as any,
+          model: 'google/text-embedding-005' as any,
           value: text,
         })
         return { ...article, embedding }

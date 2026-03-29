@@ -80,6 +80,15 @@ Both endpoints require `Authorization: Bearer <CRON_SECRET>` (Vercel injects thi
 - **Neon**: endpoint `ep-autumn-salad-anrzaln3` (us-east-1)
 - **AI Gateway**: OIDC auth via `VERCEL_OIDC_TOKEN` (auto-provisioned)
 
+## Lessons Learned
+
+The pipeline self-improves via a feedback loop:
+1. Weekly audit (Sundays) analyzes recent editions and writes to `improvement_reports` table
+2. The `nextWeekFocus` directive gets appended to `LESSONS.md` in this repo
+3. The Newsdesk agent reads `LESSONS.md` before each edition to incorporate feedback
+
+See `LESSONS.md` for the running log of directives.
+
 ## Env Vars
 
 See `.env.local.example` for the full list. Do NOT run `vercel env pull` after adding integrations — it can overwrite existing vars. The active Neon connection is the pooled `DATABASE_URL`.
