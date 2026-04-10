@@ -90,6 +90,19 @@ export default function ArticleHero({ article }: ArticleHeroProps) {
           ) : (
             <span className="font-mono text-xs text-steel-blue">{article.source}</span>
           )}
+          {article.xPostUrl && (
+            <a
+              href={article.xPostUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-xs uppercase tracking-wider transition-colors"
+              style={{ color: '#1d9bf0' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#00ff88')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#1d9bf0')}
+            >
+              &#9654; View on X
+            </a>
+          )}
           <span className="font-mono text-xs text-text-muted">{article.editionDate}</span>
         </div>
       </div>

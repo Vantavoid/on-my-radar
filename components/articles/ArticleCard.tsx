@@ -92,7 +92,7 @@ export default function ArticleCard({ article, index = 0 }: ArticleCardProps) {
         {article.summary}
       </p>
 
-      {/* Source */}
+      {/* Source + X link */}
       <div className="flex items-center gap-4 flex-wrap">
         {article.sourceUrl ? (
           <a
@@ -105,6 +105,19 @@ export default function ArticleCard({ article, index = 0 }: ArticleCardProps) {
           </a>
         ) : (
           <span className="text-xs font-mono text-steel-blue">{article.source}</span>
+        )}
+        {article.xPostUrl && (
+          <a
+            href={article.xPostUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-mono uppercase tracking-wider transition-colors"
+            style={{ color: '#1d9bf0' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#00ff88')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#1d9bf0')}
+          >
+            &#9654; View on X
+          </a>
         )}
       </div>
     </motion.article>
