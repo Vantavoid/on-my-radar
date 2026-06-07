@@ -29,6 +29,8 @@ export interface Job {
   sourceUrl: string | null
   primarySourceUrl: string | null
   posted: string | null
+  /** ISO date (YYYY-MM-DD) of the application deadline, or null if unstated. */
+  closingDate: string | null
   createdAt: string
 }
 
@@ -68,6 +70,8 @@ export interface BriefJob {
   sourceUrl?: string
   primarySourceUrl?: string
   posted?: string
+  /** Application closing date as ISO YYYY-MM-DD, or omitted if not stated. */
+  closingDate?: string
 }
 
 export interface Brief {

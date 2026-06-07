@@ -11,7 +11,7 @@
  *  6. Notify via Telegram
  */
 
-import { getDb } from '@/lib/db/client'
+import { getDbAsync } from '@/lib/db/client'
 import { editions, articles, jobs } from '@/lib/db/schema'
 import type { Brief, BriefArticle } from '@/lib/types'
 import { generateImages } from './visuals'
@@ -33,7 +33,7 @@ export async function publishEdition(brief: Brief): Promise<{ editionNumber: num
     throw new Error(`Refusing to publish empty edition for ${brief.date} — newsdesk returned 0 articles`)
   }
 
-  const db = getDb()
+  const db = await getDbAsync()
 
   // 1. Determine edition number
   const existing = await db.select().from(editions)
@@ -103,6 +103,7 @@ export async function publishEdition(brief: Brief): Promise<{ editionNumber: num
       sourceUrl: job.sourceUrl || null,
       primarySourceUrl: job.primarySourceUrl || null,
       posted: job.posted || null,
+      closingDate: job.closingDate || null,
     })
   }
 

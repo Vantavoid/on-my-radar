@@ -219,13 +219,24 @@ async function xSearch(query: string, maxResults = 15): Promise<string> {
 // ---------------------------------------------------------------------------
 
 function loadSystemPrompt(): string {
-  try {
-    return readFileSync(join(process.cwd(), '.claude/prompts/newsdesk.md'), 'utf-8')
-  } catch {
-    return `You are the Newsdesk for On My Radar, an aviation publication for Air Traffic Controllers.
+  const base = (() => {
+    try {
+      return readFileSync(join(process.cwd(), '.claude/prompts/newsdesk.md'), 'utf-8')
+    } catch {
+      return `You are the Newsdesk for On My Radar, an aviation publication for Air Traffic Controllers.
 Research aviation news and return a valid JSON brief with global (5-8 items), local (2-4 items), and jobs (3-8 items).
 Every sourceUrl must be a URL you actually retrieved. Never invent facts or URLs.`
+    }
+  })()
+  // Append the curated ATC recruitment source list so the newsdesk targets
+  // real ANSP careers pages rather than relying on broad search.
+  let jobSources = ''
+  try {
+    jobSources = '\n\n---\n\n' + readFileSync(join(process.cwd(), '.claude/prompts/atc-job-sources.md'), 'utf-8')
+  } catch {
+    // Optional — if missing, the base prompt's job rules still apply.
   }
+  return base + jobSources
 }
 
 // ---------------------------------------------------------------------------
@@ -320,11 +331,12 @@ export async function runNewsdesk(
     braveSearch(`${targetCountry} SACAA ATNS aviation news ${date}`, 'pw', 48),
     braveSearch(`FACT FAOR FALA airspace ${date}`, 'pw', 48),
     // Job queries — 30-day window (open vacancies stay relevant for weeks).
-    braveSearch(`experienced rated ATCO controller vacancy ${monthYear}`, 'pm', 24 * 30),
-    braveSearch(`qualified air traffic controller position ANSP ${monthYear}`, 'pm', 24 * 30),
-    // Extra job sources for better coverage — Lee flagged "no jobs in weeks".
-    braveSearch(`"air traffic controller" job site:linkedin.com OR site:flightglobaljobs.com`, 'pm', 24 * 30),
-    braveSearch(`ATCO recruitment vacancy 2026 ANSP rated controller`, 'pm', 24 * 30),
+    // Target the Tier-1 curated ANSP career-page domains directly. See
+    // .claude/prompts/atc-job-sources.md for the full list and rationale.
+    braveSearch(`air traffic controller vacancy site:eurocontrol.int OR site:nats.aero OR site:dfs.de OR site:skyguide.ch`, 'pm', 24 * 30),
+    braveSearch(`air traffic controller vacancy site:navcanada.ca OR site:airservicesaustralia.com OR site:airways.co.nz OR site:atns.com`, 'pm', 24 * 30),
+    braveSearch(`ATCO vacancy site:atc-network.com/jobs OR site:jobs.flightglobal.com OR site:aviationjobsearch.com`, 'pm', 24 * 30),
+    braveSearch(`"closing date" OR "apply by" air traffic controller ATCO ${monthYear}`, 'pm', 24 * 30),
   ])
   console.log('[newsdesk] Pre-fetch complete')
 
@@ -401,7 +413,7 @@ Output ONLY a valid JSON object — no prose, no markdown, no preamble:
   "global": [ { "headline": "", "summary": "", "category": "", "severity": "", "source": "", "sourceUrl": "", "xPostUrl": null, "imagePrompt": "" } ],
   "local": [],
   "noLocalNews": false,
-  "jobs": [ { "title": "", "ansp": "", "location": "", "type": "", "source": "", "sourceUrl": null, "primarySourceUrl": null, "posted": null } ]
+  "jobs": [ { "title": "", "ansp": "", "location": "", "type": "ACC|APP|TWR", "source": "", "sourceUrl": null, "primarySourceUrl": null, "posted": null, "closingDate": null } ]
 }`
 
   // Call Claude CLI — prompt via stdin, JSON response on stdout

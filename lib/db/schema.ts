@@ -58,6 +58,9 @@ export const jobs = pgTable('jobs', {
   sourceUrl: text('source_url'),
   primarySourceUrl: text('primary_source_url'),
   posted: date('posted'),
+  // Closing / application deadline date — extracted from listing copy when
+  // available. Null when the source page does not state an explicit deadline.
+  closingDate: date('closing_date'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
 

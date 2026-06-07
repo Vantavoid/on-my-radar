@@ -45,7 +45,8 @@ Return **only** a valid JSON object matching this exact schema. No markdown, no 
       "source": "string — where you found the listing",
       "sourceUrl": "string|null — URL where you found/confirmed the listing",
       "primarySourceUrl": "string|null — direct link to the job on the ANSP's own site (not a generic careers page)",
-      "posted": "YYYY-MM-DD|null"
+      "posted": "YYYY-MM-DD|null",
+      "closingDate": "YYYY-MM-DD|null — application deadline if the listing states one (Apply by / Closing date / Open until / Applications close). Omit/null if no deadline is stated. Never guess."
     }
   ]
 }
