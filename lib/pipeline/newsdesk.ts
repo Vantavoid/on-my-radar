@@ -319,6 +319,8 @@ export async function runNewsdesk(
     webJobs2,
     webJobs3,
     webJobs4,
+    webJobs5,
+    webJobs6,
   ] = await Promise.all([
     getRecentContent(7),
     xSearch('from:FlightGlobal OR from:ICAO OR from:FAA OR from:EUROCONTROL aviation'),
@@ -337,6 +339,10 @@ export async function runNewsdesk(
     braveSearch(`air traffic controller vacancy site:navcanada.ca OR site:airservicesaustralia.com OR site:airways.co.nz OR site:atns.com`, 'pm', 24 * 30),
     braveSearch(`ATCO vacancy site:atc-network.com/jobs OR site:jobs.flightglobal.com OR site:aviationjobsearch.com`, 'pm', 24 * 30),
     braveSearch(`"closing date" OR "apply by" air traffic controller ATCO ${monthYear}`, 'pm', 24 * 30),
+    // Broader queries (no site restriction) to catch listings from sources
+    // not yet curated — recruitment agencies, smaller ANSPs, LinkedIn.
+    braveSearch(`experienced "air traffic controller" hiring ${monthYear}`, 'pm', 24 * 30),
+    braveSearch(`rated ATCO recruitment "apply now" OR "closing date" ${monthYear}`, 'pm', 24 * 30),
   ])
   console.log('[newsdesk] Pre-fetch complete')
 
@@ -396,6 +402,12 @@ ${webJobs3}
 
 ### Web Search — ATCO Recruitment 2026
 ${webJobs4}
+
+### Web Search — ATCO Hiring (broad)
+${webJobs5}
+
+### Web Search — ATCO Recruitment (broad)
+${webJobs6}
 
 ---
 ${recentBlock ? `\n${recentBlock}\n\n---\n` : ''}

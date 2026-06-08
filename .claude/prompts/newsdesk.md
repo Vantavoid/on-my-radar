@@ -83,12 +83,13 @@ Return **only** a valid JSON object matching this exact schema. No markdown, no 
 - `experienced rated ATCO controller vacancy [MONTH YEAR]`
 - `qualified air traffic controller position ANSP [MONTH YEAR]`
 - Target: ANSP career pages, FlightGlobal Jobs, LinkedIn, recruitment agencies
-- Include 3–8 real current listings only
+- **TARGET: 3–8 listings per edition.** This is a MINIMUM expectation for the section to be useful.
 - **EXPERIENCED ONLY** — NO trainee positions, NO bursaries, NO cadet programs, NO entry-level roles. This is a publication for working controllers seeking their next rated position.
-- **SPECIFIC URLs REQUIRED** — Every job must link to the actual job posting page, NOT a generic careers page (e.g., never link to `atns.co.za/careers` — find the specific listing URL). If the ANSP site doesn't have a direct link, use the recruitment agency, LinkedIn, or FlightGlobal listing URL instead.
-- URL priority: primary ANSP job listing page > recruitment agency listing > LinkedIn job page > FlightGlobal Jobs listing
-- `primarySourceUrl` = direct link to the job on the ANSP's own careers site (if available)
-- `sourceUrl` = where you actually found/confirmed the listing
+- **URL preference, NOT a hard gate**: prefer the specific listing URL when one exists. If the search snippet clearly indicates an open experienced-ATCO position but you only have an ANSP careers landing page URL, INCLUDE the listing anyway — set `sourceUrl` to the careers page and leave `primarySourceUrl` null. A useful section with a few landing-page links is far better than an empty section.
+- **Don't be overly conservative.** If the search results contain 4+ results mentioning current openings (controller, ATCO, ATC vacancy, recruitment, hiring), you MUST surface at least 2-3 of them. Empty `jobs: []` is a bug, not a feature.
+- URL priority: primary ANSP job listing page > recruitment agency listing > LinkedIn job page > FlightGlobal Jobs listing > ANSP careers landing page (fallback)
+- `primarySourceUrl` = direct link to the job on the ANSP's own careers site if available, otherwise null
+- `sourceUrl` = where you actually found/confirmed the listing (always required)
 
 ---
 

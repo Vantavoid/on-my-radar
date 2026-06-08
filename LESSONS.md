@@ -25,6 +25,25 @@ This file is updated by the weekly audit (Sundays). The Newsdesk agent reads it 
 **Jobs: working controllers only, current listings only.**
 
 - EXPERIENCED/RATED ATCOs only. No trainees, no bursaries, no cadets, no students.
-- Every listing MUST have been posted within the last 30 days. If you can't confirm a posting date, do not include it.
+- Posting date preference: prefer listings posted in the last 30 days, but
+  an undated listing whose snippet clearly describes a CURRENT opening (uses
+  present tense, names a specific role, mentions "apply now" / "closing date"
+  / "we are recruiting" / "vacancy") is acceptable. Set `posted: null` in
+  that case. Don't reject solely because a date isn't stamped.
 - Never re-list a job that appeared in any recent edition (the ALREADY LISTED JOBS block tells you what to skip).
-- If you can't find 3 fresh, verified, experienced-controller listings — publish fewer. Zero jobs is better than stale or trainee listings.
+- TARGET: 3–8 verified, experienced-controller listings per edition. If
+  search results contain 4+ snippets mentioning current openings, you must
+  surface at least 2–3 of them. Empty `jobs: []` is a regression — Lee has
+  flagged the lack of listings as a recurring problem.
+
+### Week of Tue Apr 07 2026 00:00:00 GMT+0200 (Central Africa Time)
+
+Restore core content pipeline immediately — ingest at least 5 verified articles per edition from primary sources (NTSB, SACAA, BEA) before publication, and populate jobs listings with a minimum of 3 current ATC-relevant vacancies.
+
+### Week of Sun Apr 12 2026 00:00:00 GMT+0200 (Central Africa Time)
+
+Diagnose and resolve the content pipeline failure immediately — no articles or jobs have been published across 5 consecutive editions, indicating a systemic ingestion, parsing, or publishing fault that must be fixed before any editorial quality work is meaningful.
+
+### Week of Sun Apr 19 2026 00:00:00 GMT+0200 (Central Africa Time)
+
+Restore the content pipeline immediately — populate every edition with a minimum of 5 audited articles sourced from primary safety authorities (NTSB, SACAA, BEA) and at least 3 verified ATC job listings before publication.
