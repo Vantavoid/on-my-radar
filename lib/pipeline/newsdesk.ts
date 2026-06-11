@@ -52,6 +52,23 @@ function ageHours(pageAge?: string): number | null {
   return (Date.now() - ts) / 3_600_000
 }
 
+/**
+ * True for listing/index URLs — tag, category, topic, search, section, author
+ * pages, or a bare domain root. These aggregate many stories rather than BE a
+ * story; clicking one drops the reader on a feed, not the article. The model
+ * sometimes picks them as a sourceUrl (e.g. cbsnews.com/tag/plane-crash), so we
+ * drop them from search results before the model ever sees them.
+ */
+function isListingPageUrl(rawUrl: string): boolean {
+  try {
+    const path = new URL(rawUrl).pathname.replace(/\/+$/, '')
+    if (path === '') return true // bare homepage
+    return /(^|\/)(tag|tags|category|categories|topic|topics|search|section|sections|author|authors)(\/|$)/i.test(path)
+  } catch {
+    return false
+  }
+}
+
 async function braveSearch(query: string, freshness?: string, maxAgeHours = 48): Promise<string> {
   const key = process.env.BRAVE_API_KEY
   if (!key) {
@@ -87,7 +104,15 @@ async function braveSearch(query: string, freshness?: string, maxAgeHours = 48):
     // Hard freshness filter: drop anything we can date older than maxAgeHours.
     // Results without a parseable date are kept (we can't prove they're stale)
     // but downranked by being shown last so fresher items take priority.
-    const dated: Array<{ result: typeof results[number]; hours: number | null }> = results.map(r => ({
+    // Drop listing/index pages (tag, category, search, homepage) — they are not
+    // stories, and the model must never be offered one as a candidate sourceUrl.
+    const articleResults = results.filter(r => !isListingPageUrl(r.url))
+    const listingDropped = results.length - articleResults.length
+    if (listingDropped > 0) {
+      console.log(`[newsdesk] Brave "${query}" → dropped ${listingDropped} listing/tag page(s)`)
+    }
+
+    const dated: Array<{ result: typeof results[number]; hours: number | null }> = articleResults.map(r => ({
       result: r,
       hours: ageHours(r.page_age),
     }))
@@ -225,7 +250,7 @@ function loadSystemPrompt(): string {
     } catch {
       return `You are the Newsdesk for On My Radar, an aviation publication for Air Traffic Controllers.
 Research aviation news and return a valid JSON brief with global (5-8 items), local (2-4 items), and jobs (3-8 items).
-Every sourceUrl must be a URL you actually retrieved. Never invent facts or URLs.`
+Every sourceUrl must be a DIRECT article URL you actually retrieved — never a tag/category/topic/search/section page or a bare homepage, and never invented.`
     }
   })()
   // Append the curated ATC recruitment source list so the newsdesk targets
@@ -236,7 +261,18 @@ Every sourceUrl must be a URL you actually retrieved. Never invent facts or URLs
   } catch {
     // Optional — if missing, the base prompt's job rules still apply.
   }
-  return base + jobSources
+  // Append the LESSONS.md feedback log so accumulated weekly directives
+  // (and Lee's standing instructions) reach the newsdesk every run. Without
+  // this load, LESSONS.md was effectively dead — written by the audit
+  // pipeline but never consumed.
+  let lessons = ''
+  try {
+    lessons = '\n\n---\n\n## Accumulated Lessons & Directives\n\n' +
+      readFileSync(join(process.cwd(), 'LESSONS.md'), 'utf-8')
+  } catch {
+    // Optional — if missing, the base prompt still applies.
+  }
+  return base + jobSources + lessons
 }
 
 // ---------------------------------------------------------------------------

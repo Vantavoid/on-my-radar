@@ -14,6 +14,13 @@ This file is updated by the weekly audit (Sundays). The Newsdesk agent reads it 
 
 ## Weekly Directives
 
+### Directive — 2026-06-11 (manual)
+
+**Source URLs must be the actual story, never a listing page.**
+
+- A `sourceUrl` of `cbsnews.com/tag/plane-crash` (or any `/tag/`, `/category/`, `/topic/`, `/search`, `/section`, `/author`, or bare homepage URL) is FORBIDDEN — it drops the reader on a feed, not the article. Lee flagged a LaGuardia jet/fire-truck story that linked to a CBS tag page instead of the report.
+- The Newsdesk now drops listing-page URLs from Brave results before you see them (`isListingPageUrl`), so candidates should already be clean — but if you only have a listing URL for a story, **drop the story** rather than link the listing. A missing item beats a broken link. B2B-quality bar.
+
 ### Directive — 2026-04-10 (manual)
 
 **Freshness is everything. ATCs come here for news from the past 24–48h, not last week.**

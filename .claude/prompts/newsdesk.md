@@ -29,7 +29,7 @@ Return **only** a valid JSON object matching this exact schema. No markdown, no 
       "category": "incident|regulation|technology|airspace|weather|staffing",
       "severity": "routine|notable|critical",
       "source": "string — publication name",
-      "sourceUrl": "string — URL you actually retrieved",
+      "sourceUrl": "string — the DIRECT article URL you retrieved. NEVER a tag/category/topic/search/section page or a bare homepage (e.g. cbsnews.com/tag/plane-crash is forbidden — find the actual story URL). If you only have a listing-page URL for a story, drop the story rather than link the listing.",
       "xPostUrl": "string|null — X.com post URL if found",
       "imagePrompt": "string — cinematic image brief for visual director (see below)"
     }
